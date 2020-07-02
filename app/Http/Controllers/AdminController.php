@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\SalesData;
-use App\Member;
-use App\User;
 use App\Expense;
 use Carbon\Carbon;
 use DB;
 use Goutte\Client;
-use App\ReturnSd;
-use Config;
+use GuzzleHttp;
+
+use function PHPSTORM_META\type;
 
 class AdminController extends Controller
 {
@@ -142,28 +140,26 @@ class AdminController extends Controller
                                     order by payment_month desc;');
         // dd($revenue_data);
 
-        /////////////////////////////Instagram Functionality///////////////////////////
-        $username = 'instagram';
-        $response = @file_get_contents("https://www.instagram.com/$username/?__a=1");
-
-        if ($response !== false) {
-            $data = json_decode($response, true);
-            $instagram = [];
-            if ($data !== null) {
-                $full_name = $data['graphql']['user']['full_name'];
-                $following  = $data['graphql']['user']['edge_follow']['count'];
-                $followers  = $data['graphql']['user']['edge_followed_by']['count'];
-                $profile = $data['graphql']['user']['profile_pic_url_hd'];
-                $instagram['username'] = $username;
-                $instagram['full_name'] = $full_name;
-                $instagram['followers'] = $followers;
-                $instagram['following'] = $following;
-                $instagram['profile'] = $profile;
-                // dd( $following);
-            }
-        } else {
-            echo 'Username not found.';
-        }
+        // /////////////////////////////Instagram Functionality///////////////////////////
+        // $username = 'instagram';
+        // $response = @file_get_contents("https://www.instagram.com/$username/?__a=1");
+        // if ($response !== false) {
+        //     $data = json_decode($response, true);
+        //     $instagram = [];
+        //     if ($data !== null) {
+        //         $full_name = $data['graphql']['user']['full_name'];
+        //         $following  = $data['graphql']['user']['edge_follow']['count'];
+        //         $followers  = $data['graphql']['user']['edge_followed_by']['count'];
+        //         $profile = $data['graphql']['user']['profile_pic_url_hd'];
+        //         $instagram['username'] = $username;
+        //         $instagram['full_name'] = $full_name;
+        //         $instagram['followers'] = $followers;
+        //         $instagram['following'] = $following;
+        //         $instagram['profile'] = $profile;
+        //     }
+        // } else {
+        //     echo 'Username not found.';
+        // }
     
         
         $current_revenue = DB::select('SELECT payment_month as label, sum(total_amt) value 
@@ -422,22 +418,30 @@ class AdminController extends Controller
             $y=$crawler->filter('div[class=_4bl9]')->eq(0);
             $facebook_follower_count=explode(" ",$x->text())[0];
             $facebook_like_count=explode(" ",$y->text())[0];
-            $user_agent_old_phone = 'Nokia5310XpressMusic_CMCC/2.0 (10.10) Profile/MIDP-2.1 Configuration/CLDC-1.1 UCWEB/2.0 (Java; U; MIDP-2.0; en-US; Nokia5310XpressMusic) U2/1.0.0 UCBrowser/9.5.0.449 U2/1.0.0 Mobile';
-            
+
+    } catch (Exception $e) {
+             echo $e;
+         } 
+        //////////////////////////Twitter Functionality/////////////////////////
+        // $user_agent_old_phone = 'Nokia5310XpressMusic_CMCC/2.0 (10.10) Profile/MIDP-2.1 Configuration/CLDC-1.1 UCWEB/2.0 (Java; U; MIDP-2.0; en-US; Nokia5310XpressMusic) U2/1.0.0 UCBrowser/9.5.0.449 U2/1.0.0 Mobile';    
         //     $twitter=$client->request('GET','https://twitter.com/TwitterIndia',[
         //         'headers' =>  [ 
         //         'User-Agent' => $user_agent_old_phone,
         // ],]);
-        
         //     $temp=$twitter->filter('div[class=statnum]');
         //     dd($temp->text());
 
-    } catch (Exception $e) {
-             //echo $e;
-         } 
+         ///////////////////////////////Instagram Functionality///////////////////////////
+        $instagram = [];
+        $insta_client = new \GuzzleHttp\Client();
+        $insta = $insta_client->request('GET', "https://www.instagram.com/instagram/");
+        $new_str=substr(strstr($insta->getBody(true)->getContents(),'property="og:description'),35,100);
+        $insta_break=explode(" ",$new_str);
+        $instagram['followers']=$insta_break[0];
+        $instagram['following']=$insta_break[2];
+        // dd($insta_break);
 
-         $revenue_data = DB::select('SELECT payment_month as label, sum(monthly_rent)/sum(no_of_seats) as value from company_revenues group by payment_month order by payment_month Desc;');
-
+        $revenue_data = DB::select('SELECT payment_month as label, sum(monthly_rent)/sum(no_of_seats) as value from company_revenues group by payment_month order by payment_month Desc;');
         $today = date("Y-m");
 
         foreach ($revenue_data as $value) {
