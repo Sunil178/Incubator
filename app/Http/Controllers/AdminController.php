@@ -435,7 +435,7 @@ class AdminController extends Controller
         $instagram = [];
         $insta_client = new \GuzzleHttp\Client();
         $insta = $insta_client->request('GET', "https://www.instagram.com/instagram/");
-        $new_str=substr(strstr($insta->getBody(true)->getContents(),'property="og:description'),35,100);
+        $new_str=substr(strstr($insta->getBody(true)->getContents(),'property="og:description'),35);
         $insta_break=explode(" ",$new_str);
         $instagram['followers']=$insta_break[0];
         $instagram['following']="59";
