@@ -434,12 +434,21 @@ class AdminController extends Controller
          ///////////////////////////////Instagram Functionality///////////////////////////
         $instagram = [];
         $insta_client = new \GuzzleHttp\Client();
-        $insta = $insta_client->request('GET', "https://www.instagram.com/instagram/");
-        $new_str=substr(strstr($insta->getBody(true)->getContents(),'property="og:description'),35);
+        $insta = $insta_client->request('GET', "https://www.instagram.com/instagram/",[
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
+                'Accept'=> 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+                'Accept-Language'=> 'en-US,en;q=0.5',
+                'Accept-Encoding' => 'gzip', 
+                'DNT' => '1', 
+                'Connection' => 'close'
+            ]
+        ]);
+        $new_str=substr(strstr($insta->getBody(true)->getContents(),'property="og:description'),35,100);
         $insta_break=explode(" ",$new_str);
         $instagram['followers']="355.7m";
         $instagram['following']="59";
-        // print_r($insta_break);
+        print_r($insta_break);
         // dd($insta_break);
 
         $revenue_data = DB::select('SELECT payment_month as label, sum(monthly_rent)/sum(no_of_seats) as value from company_revenues group by payment_month order by payment_month Desc;');
