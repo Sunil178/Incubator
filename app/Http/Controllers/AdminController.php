@@ -439,7 +439,7 @@ class AdminController extends Controller
         $insta_break=explode(" ",$new_str);
         $instagram['followers']=$insta_break[0];
         $instagram['following']="59";
-        print_r($insta_break);
+        // print_r($insta_break);
         // dd($insta_break);
 
         $revenue_data = DB::select('SELECT payment_month as label, sum(monthly_rent)/sum(no_of_seats) as value from company_revenues group by payment_month order by payment_month Desc;');
